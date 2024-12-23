@@ -1,21 +1,16 @@
 package com.example.fetchexercise.ui.screens.groupedList
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.fetchexercise.data.model.ListItem
 import com.example.fetchexercise.data.repository.ItemRepository
 import com.example.fetchexercise.data.repository.ItemRepositoryImpl
 import com.example.fetchexercise.state.GroupedListState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class GroupedListViewModel(
     private val repository: ItemRepository = ItemRepositoryImpl()
@@ -25,7 +20,7 @@ class GroupedListViewModel(
 
     // loading state
     private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    val isRefreshing = _isRefreshing.asStateFlow()
 
     init {
         fetchData()
@@ -59,13 +54,13 @@ class GroupedListViewModel(
         }
     }
 
-    // refresh data
     fun refresh() {
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
                 fetchData()
             } finally {
+                delay(300) // Brief delay to ensure smooth animation
                 _isRefreshing.value = false
             }
         }
