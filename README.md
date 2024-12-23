@@ -16,10 +16,10 @@ If I were to continue with iterations to make the app more maintainable, scalabl
 - Room Database for data persistence and caching
 - Retrofit with OkHttp for networking, which would be great for a suite of api's
 - Repository pattern with Flow
-- Unit and UI testing with code coverage mimimum requirements (for example 80%)
+- Unit and UI testing with code coverage minimum requirements (for example 80%)
 - CI/CD pipeline set up
 - Error tracking and analytics
 - Pagination for large datasets
-- UI enhancements (i.e., scrollbars, search functionality)
+- UI enhancements (i.e., scrollbars, search functionality, nicer looking design)
 
 Thank you again for giving me the opportunity to work on this. I look forward to talking with you as soon as possible! 
