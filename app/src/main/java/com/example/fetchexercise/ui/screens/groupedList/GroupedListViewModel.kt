@@ -23,15 +23,16 @@ class GroupedListViewModel(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     init {
-        fetchData()
+        fetchDataBasic()
+        //fetchDataRetrofit()
     }
 
-    private fun fetchData() {
+    private fun fetchDataBasic() {
         viewModelScope.launch {
             _uiState.value = GroupedListState.Loading
 
-            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string, instead of splitting out the numbers
-            repository.fetchItems()
+            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string
+            repository.fetchItemsBasicMethod()
                 .onSuccess { items ->
                     // Process the items according to requirements
                     val processedItems = items
@@ -43,7 +44,44 @@ class GroupedListViewModel(
                         .sortedWith(
                             compareBy<ListItem> { it.listId }
                                 .thenBy { item ->
-                                    // Need to extract the number from the item name to sort correctly
+                                    // Need to extract the chars after "Item " and compare as Integers to sort correctly
+                                    item.name?.substringAfter("Item ")
+                                        ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
+                                }
+                        )
+                        .groupBy { it.listId }
+
+                    _uiState.value = GroupedListState.Success(
+                        groupedItems = processedItems,
+                        filteredItems = processedItems
+                    )
+                }
+                .onFailure { error ->
+                    _uiState.value = GroupedListState.Error(
+                        message = "Failed to load items: ${error.localizedMessage}"
+                    )
+                }
+        }
+    }
+
+    private fun fetchDataRetrofit() {
+        viewModelScope.launch {
+            _uiState.value = GroupedListState.Loading
+
+            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string
+            repository.fetchItemsRetrofit()
+                .onSuccess { items ->
+                    // Process the items according to requirements
+                    val processedItems = items
+                        .filter { !it.name.isNullOrBlank() }
+//                        .sortedWith(
+//                            compareBy<ListItem> { it.listId }
+//                                .thenBy { it.name }
+//                        )
+                        .sortedWith(
+                            compareBy<ListItem> { it.listId }
+                                .thenBy { item ->
+                                    // Need to extract the chars after "Item " and compare as Integers to sort correctly
                                     item.name?.substringAfter("Item ")
                                         ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
                                 }
@@ -67,7 +105,7 @@ class GroupedListViewModel(
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
-                fetchData()
+                fetchDataBasic()
             } finally {
                 delay(300) // Brief delay to ensure smooth animation
                 _isRefreshing.value = false
