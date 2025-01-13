@@ -30,14 +30,23 @@ class GroupedListViewModel(
         viewModelScope.launch {
             _uiState.value = GroupedListState.Loading
 
+            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string, instead of splitting out the numbers
             repository.fetchItems()
                 .onSuccess { items ->
                     // Process the items according to requirements
                     val processedItems = items
                         .filter { !it.name.isNullOrBlank() }
+//                        .sortedWith(
+//                            compareBy<ListItem> { it.listId }
+//                                .thenBy { it.name }
+//                        )
                         .sortedWith(
                             compareBy<ListItem> { it.listId }
-                                .thenBy { it.name }
+                                .thenBy { item ->
+                                    // Need to extract the number from the item name to sort correctly
+                                    item.name?.substringAfter("Item ")
+                                        ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
+                                }
                         )
                         .groupBy { it.listId }
 
