@@ -2,6 +2,9 @@
 agp = "8.7.3"
 androidxMaterial3 = "1.3.0"
 converterGson = "2.9.0"
+kspVersion = "2.0.21-1.0.27"
+hiltAndroidVersion = "2.51.1"
+hiltNavigationCompose = "1.2.0"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -14,13 +17,19 @@ composeBom = "2024.12.01"
 material3 = "1.3.1"
 material3Version = "1.3.0-beta04"
 retrofitVersion = "2.9.0"
+roomCompiler = "2.6.1"
 runtimeLivedata = "1.7.6"
 securityCryptoVersion = "1.1.0-alpha06"
 
 [libraries]
+hilt-android = { group = "com.google.dagger", name = "hilt-android" , version.ref = "hiltAndroidVersion"}
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler" , version.ref = "hiltAndroidVersion"}
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-android = { module = "androidx.hilt:hilt-android", version.ref = "hiltAndroidVersion" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material3-v130 = { module = "androidx.compose.material3:material3", version.ref = "androidxMaterial3" }
 androidx-material3-v130beta04 = { module = "androidx.compose.material3:material3", version.ref = "material3Version" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCryptoVersion" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -44,5 +53,7 @@ retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref =
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinAndroidKsp = { id = "com.google.devtools.ksp", version.ref ="kspVersion" }
+hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref ="hiltAndroidVersion" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 

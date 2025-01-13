@@ -1,5 +1,6 @@
 package com.example.fetchexercise.data.repository
 
+import com.example.fetchexercise.data.api.constants.ApiConstants
 import com.example.fetchexercise.data.model.ListItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,7 +18,7 @@ interface ItemRepository {
     suspend fun fetchItemsRetrofit(): Result<List<ListItem>>
 }
 
-// The actual implementation that handles the network calls and data processing
+// The basic implementation that handles the network calls and data processing
 class ItemRepositoryImpl : ItemRepository {
     // Using Result type allows us to handle success and failure cases elegantly
     override suspend fun fetchItemsBasicMethod(): Result<List<ListItem>> = runCatching {
@@ -49,6 +50,8 @@ class ItemRepositoryImpl : ItemRepository {
         }
     }
 
+    // Retrofit is a more preferred implementation for handling network calls in larger apps
+    // These would be placed in separate modules or packages in a real-world app - see example files
     override suspend fun fetchItemsRetrofit(): Result<List<ListItem>> {
         val api = getRetrofit().create(FetchApiService::class.java)
 
@@ -65,7 +68,7 @@ class ItemRepositoryImpl : ItemRepository {
 
 private fun getRetrofit(): Retrofit {
     return Retrofit.Builder()
-        .baseUrl("https://fetch-hiring.s3.amazonaws.com/")
+        .baseUrl(ApiConstants.FETCH_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create()) // convert JSON to objects
         .build()
 }
