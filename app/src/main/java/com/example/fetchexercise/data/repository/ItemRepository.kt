@@ -1,5 +1,6 @@
 package com.example.fetchexercise.data.repository
 
+import android.util.Log
 import com.example.fetchexercise.data.api.constants.ApiConstants
 import com.example.fetchexercise.data.model.ListItem
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ interface ItemRepository {
 class ItemRepositoryImpl : ItemRepository {
     // Using Result type allows us to handle success and failure cases elegantly
     override suspend fun fetchItemsBasicMethod(): Result<List<ListItem>> = runCatching {
+        Log.d("ItemRepository,","fetchItems Called")
         withContext(Dispatchers.IO) {
             val url = URL("https://fetch-hiring.s3.amazonaws.com/hiring.json")
             val connection = url.openConnection() as HttpURLConnection

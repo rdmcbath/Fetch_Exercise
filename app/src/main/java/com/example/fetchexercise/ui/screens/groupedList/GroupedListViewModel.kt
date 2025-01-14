@@ -1,5 +1,6 @@
 package com.example.fetchexercise.ui.screens.groupedList
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fetchexercise.data.model.ListItem
@@ -18,9 +19,14 @@ class GroupedListViewModel(
     private val _uiState = MutableStateFlow<GroupedListState>(GroupedListState.Loading)
     val uiState: StateFlow<GroupedListState> = _uiState.asStateFlow()
 
-    // loading state
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
+
+    private val _isFiltered = MutableStateFlow(false)
+    val isFiltered = _isFiltered.asStateFlow()
+
+    private val _isSorted = MutableStateFlow(false)
+    val isSorted = _isSorted.asStateFlow()
 
     init {
         fetchDataBasic()
@@ -31,29 +37,16 @@ class GroupedListViewModel(
         viewModelScope.launch {
             _uiState.value = GroupedListState.Loading
 
-            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string
             repository.fetchItemsBasicMethod()
                 .onSuccess { items ->
-                    // Process the items according to requirements
-                    val processedItems = items
-                        .filter { !it.name.isNullOrBlank() }
-//                        .sortedWith(
-//                            compareBy<ListItem> { it.listId }
-//                                .thenBy { it.name }
-//                        )
-                        .sortedWith(
-                            compareBy<ListItem> { it.listId }
-                                .thenBy { item ->
-                                    // Need to extract the chars after "Item " and compare as Integers to sort correctly
-                                    item.name?.substringAfter("Item ")
-                                        ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
-                                }
-                        )
-                        .groupBy { it.listId }
+                    Log.d("viewModel", "fetch Success")
+//
+                    val groupedItems = items.groupBy { it.listId }
 
                     _uiState.value = GroupedListState.Success(
-                        groupedItems = processedItems,
-                        filteredItems = processedItems
+                        groupedItems = groupedItems,
+                        filteredItems = groupedItems, // will filter in separate method
+                        sortedFilteredItems = groupedItems, // will sort in separate method
                     )
                 }
                 .onFailure { error ->
@@ -68,20 +61,15 @@ class GroupedListViewModel(
         viewModelScope.launch {
             _uiState.value = GroupedListState.Loading
 
-            // I realized that I initially made a mistake in the sorting logic. I was sorting using the entire name string
             repository.fetchItemsRetrofit()
                 .onSuccess { items ->
                     // Process the items according to requirements
                     val processedItems = items
                         .filter { !it.name.isNullOrBlank() }
-//                        .sortedWith(
-//                            compareBy<ListItem> { it.listId }
-//                                .thenBy { it.name }
-//                        )
                         .sortedWith(
                             compareBy<ListItem> { it.listId }
                                 .thenBy { item ->
-                                    // Need to extract the chars after "Item " and compare as Integers to sort correctly
+                                    // extract the chars after "Item " and compare as Integers to sort correctly
                                     item.name?.substringAfter("Item ")
                                         ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
                                 }
@@ -90,7 +78,8 @@ class GroupedListViewModel(
 
                     _uiState.value = GroupedListState.Success(
                         groupedItems = processedItems,
-                        filteredItems = processedItems
+                        filteredItems = processedItems,
+                        sortedFilteredItems = processedItems
                     )
                 }
                 .onFailure { error ->
@@ -98,6 +87,48 @@ class GroupedListViewModel(
                         message = "Failed to load items: ${error.localizedMessage}"
                     )
                 }
+        }
+    }
+
+    fun toggleFilter() {
+        val currentState = _uiState.value
+        if (currentState is GroupedListState.Success) {
+            if (currentState.filteredItems == currentState.groupedItems) {
+                val filtered = currentState.groupedItems.mapValues { (_, items) ->
+                    items.filter { !it.name.isNullOrBlank() }
+                }.filterValues { it.isNotEmpty() }
+
+                _uiState.value = currentState.copy(filteredItems = filtered)
+            } else {
+                _uiState.value = currentState.copy(filteredItems = currentState.groupedItems)
+            }
+
+            _isFiltered.value = !isFiltered.value
+        }
+    }
+
+    fun toggleFilterSort() {
+        val currentState = _uiState.value
+        if (currentState is GroupedListState.Success) {
+            if (currentState.sortedFilteredItems == currentState.groupedItems) {
+                val sortedFiltered = currentState.groupedItems.mapValues { (_, items) ->
+                    items.filter { !it.name.isNullOrBlank() }
+                    .sortedWith(
+                        compareBy<ListItem> { it.listId }
+                            .thenBy { item ->
+                                // extract the chars after "Item " and compare as Integers to sort correctly
+                                item.name?.substringAfter("Item ")
+                                    ?.toIntOrNull() ?: 0 // Fallback to 0 if not a number
+                            }
+                    )
+                }
+
+                _uiState.value = currentState.copy(sortedFilteredItems = sortedFiltered)
+            } else {
+                _uiState.value = currentState.copy(sortedFilteredItems = currentState.groupedItems)
+            }
+
+            _isSorted.value = !isSorted.value
         }
     }
 

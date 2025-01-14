@@ -31,6 +31,8 @@ fun GroupedListScreen(
 ) {
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+    val isFiltered by viewModel.isFiltered.collectAsState()
+    val isSorted by viewModel.isSorted.collectAsState()
 
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -67,15 +69,17 @@ fun GroupedListScreen(
             when (val state = uiState) {
                 is GroupedListState.Loading -> LoadingState()
                 is GroupedListState.Success -> {
-                    if (state.filteredItems.isEmpty()) {
+                    if (state.groupedItems.isEmpty()) {
                             EmptyState(
                                 title = "No Items Yet",
                                 message = "Pull down to refresh or add items to get started"
                             )
                     } else {
                         SuccessState(
-                            groupedItems = state.filteredItems,
-                            transitionSpec = tween(1000, easing = EaseInOut)
+                            state = state,
+                            transitionSpec = tween(1000, easing = EaseInOut),
+                            onToggleFilter = { viewModel.toggleFilter() },
+                            onToggleFilterSort = { viewModel.toggleFilterSort() }
                         )
                     }
                 }
